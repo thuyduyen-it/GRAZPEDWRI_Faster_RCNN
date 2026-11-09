@@ -35,7 +35,7 @@ data:
 
   # Loader parameters
   loader:
-    batch_size: 2
+    batch_size: 4
     num_workers: 2
     pin_memory: true
     drop_last: false
@@ -43,8 +43,8 @@ data:
 transforms:
   # Image preprocessing & normalization
   image_size:
-    min_size: 800
-    max_size: 1333
+    min_size: 600
+    max_size: 1000
   normalization:
     # ImageNet standard normalization (compatible with torchvision ResNet50-FPN weights)
     mean: [0.485, 0.456, 0.406]
@@ -65,27 +65,28 @@ model:
   box_detections_per_img: 100
 
 training:
-  epochs: 20
+  epochs: 10
   mixed_precision: true  # Automatic Mixed Precision (torch.cuda.amp)
   clip_grad_norm: 10.0
   log_interval: 50
-  val_interval: 1
+  val_interval: 2
   save_interval: 5
+  auto_download_colab: false   # Set True if you want browser popup to download best_model.pth automatically
   early_stopping:
     enabled: true
-    patience: 5
+    patience: 4
     monitor: "val_map_50"
     mode: "max"
 
 optimizer:
   type: "SGD"
-  lr: 0.005
+  lr: 0.0075
   momentum: 0.9
   weight_decay: 0.0005
 
 lr_scheduler:
   type: "StepLR"
-  step_size: 6
+  step_size: 4
   gamma: 0.1
 
 evaluation:
@@ -95,6 +96,7 @@ evaluation:
 
 paths:
   checkpoints_dir: "checkpoints"
+  drive_backup_dir: "/content/drive/MyDrive/GRAZPEDWRI_Dataset/checkpoints"
   output_dir: "outputs"
   logs_dir: "outputs/logs"
   metrics_dir: "outputs/metrics"

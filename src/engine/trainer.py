@@ -291,6 +291,32 @@ class Trainer:
             # Save last_model.pth
             save_checkpoint(checkpoint_state, self.checkpoints_dir, filename="last_model.pth", is_best=is_best)
 
+            # Automatic Backup to Google Drive (if running in Colab with mounted Drive or configured path)
+            drive_backup_dir = self.config.get("paths", {}).get("drive_backup_dir", None)
+            if drive_backup_dir is None and Path("/content/drive/MyDrive").exists():
+                drive_backup_dir = "/content/drive/MyDrive/GRAZPEDWRI_Dataset/checkpoints"
+
+            if drive_backup_dir:
+                try:
+                    import shutil
+                    drive_dir = Path(drive_backup_dir)
+                    drive_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(self.checkpoints_dir / "last_model.pth", drive_dir / "last_model.pth")
+                    if is_best and (self.checkpoints_dir / "best_model.pth").exists():
+                        shutil.copy2(self.checkpoints_dir / "best_model.pth", drive_dir / "best_model.pth")
+                        self.logger.info(f"==> Synced best_model.pth to Google Drive: {drive_dir / 'best_model.pth'}")
+                except Exception as e:
+                    self.logger.warning(f"Could not backup checkpoint to Google Drive: {e}")
+
+            # Optional: trigger direct browser download on Colab when best model is updated
+            if is_best and self.training_cfg.get("auto_download_colab", False):
+                try:
+                    from google.colab import files
+                    self.logger.info("==> Triggering Colab direct download for best_model.pth...")
+                    files.download(str(self.checkpoints_dir / "best_model.pth"))
+                except Exception as e:
+                    self.logger.warning(f"Could not trigger Colab browser download: {e}")
+
             # Save periodic checkpoint
             if epoch % save_interval == 0:
                 save_checkpoint(checkpoint_state, self.checkpoints_dir, filename=f"checkpoint_epoch_{epoch:02d}.pth")

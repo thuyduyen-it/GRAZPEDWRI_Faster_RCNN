@@ -181,8 +181,9 @@ def build_model(config: Dict[str, Any]) -> nn.Module:
     if anchor_sizes and aspect_ratios:
         anchor_gen = AnchorGenerator(sizes=anchor_sizes, aspect_ratios=aspect_ratios)
 
-    min_size = model_cfg.get("min_size", 800)
-    max_size = model_cfg.get("max_size", 1333)
+    t_size = config.get("transforms", {}).get("image_size", {})
+    min_size = model_cfg.get("min_size", t_size.get("min_size", 800))
+    max_size = model_cfg.get("max_size", t_size.get("max_size", 1333))
 
     if architecture == "fasterrcnn_resnet50_fpn":
         return build_faster_rcnn_resnet50(
