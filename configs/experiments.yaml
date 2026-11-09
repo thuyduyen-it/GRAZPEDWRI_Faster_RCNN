@@ -1,0 +1,95 @@
+# ==============================================================================
+# GRAZPEDWRI_Faster_RCNN - Experimental Strategy Suite
+# Defines controlled experiments across Augmentation, Backbones, Resolutions, & Hyperparameters
+# ==============================================================================
+
+common:
+  dataset_root: "/content/dataset"
+  seed: 42
+  num_classes: 2
+  target_metric: "val_map_50"
+
+experiments:
+  exp_01_baseline:
+    name: "Baseline ResNet-50-FPN"
+    description: "Standard Faster R-CNN with ResNet50-FPN, COCO weights, SGD lr=0.005, batch_size=2"
+    config_file: "configs/baseline.yaml"
+    model:
+      architecture: "fasterrcnn_resnet50_fpn"
+      trainable_backbone_layers: 3
+    training:
+      epochs: 20
+      batch_size: 2
+      optimizer: "SGD"
+      lr: 0.005
+      weight_decay: 0.0005
+    transforms:
+      min_size: 800
+      max_size: 1333
+      horizontal_flip: 0.5
+
+  exp_02_augmentation:
+    name: "Medical Image Domain Augmentation"
+    description: "Evaluates conservative medical-safe augmentations (CLAHE, small rotation +/- 10 deg, random brightness/contrast)"
+    config_file: "configs/baseline.yaml"
+    inherits: "exp_01_baseline"
+    transforms:
+      augmentation_strategy: "medical_conservative"
+      horizontal_flip: 0.5
+      random_rotate_degrees: 10
+      clahe:
+        enabled: true
+        clip_limit: 2.0
+      random_brightness_contrast:
+        brightness_limit: 0.1
+        contrast_limit: 0.1
+
+  exp_03_backbone:
+    name: "Backbone Architecture Comparison"
+    description: "Compares feature representation capability and parameter trade-offs across backbones"
+    variants:
+      resnet50_fpn:
+        architecture: "fasterrcnn_resnet50_fpn"
+        weights: "DEFAULT"
+        trainable_backbone_layers: 3
+      resnet101_fpn:
+        architecture: "fasterrcnn_resnet101_fpn"  # custom backbone constructor with FPN
+        weights: "DEFAULT"
+        trainable_backbone_layers: 3
+      mobilenet_v3_large_fpn:
+        architecture: "fasterrcnn_mobilenet_v3_large_fpn"
+        weights: "DEFAULT"
+        trainable_backbone_layers: 3
+
+  exp_04_image_resolution:
+    name: "Multi-scale Image Resolution Comparison"
+    description: "Evaluates impact of input resolution on tiny fracture detection vs GPU memory usage"
+    variants:
+      res_600:
+        min_size: 600
+        max_size: 1000
+      res_800:
+        min_size: 800
+        max_size: 1333
+      res_1024:
+        min_size: 1024
+        max_size: 1600
+
+  exp_05_hyperparameters:
+    name: "Optimization & Regularization Comparison"
+    description: "Systematic comparison of optimizers, initial learning rates, and weight decay schedules"
+    variants:
+      sgd_lr_005:
+        optimizer: "SGD"
+        lr: 0.005
+        momentum: 0.9
+        weight_decay: 0.0005
+      sgd_lr_001:
+        optimizer: "SGD"
+        lr: 0.001
+        momentum: 0.9
+        weight_decay: 0.0005
+      adamw_lr_0001:
+        optimizer: "AdamW"
+        lr: 0.0001
+        weight_decay: 0.01

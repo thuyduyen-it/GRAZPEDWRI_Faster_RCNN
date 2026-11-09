@@ -1,0 +1,96 @@
+data:
+  classes:
+    names:
+      0: background
+      1: fracture
+    num_classes: 2
+    yolo_mapping:
+      0: 1
+  images_dir: images
+  labels_dir: labels
+  loader:
+    batch_size: 2
+    drop_last: false
+    num_workers: 2
+    pin_memory: true
+  metadata:
+    dataset_csv: data/metadata/dataset.csv
+    dataset_yaml: data/metadata/dataset.yaml
+    split_by_patient_csv: data/metadata/split_by_patient.csv
+    test_split: data/splits/test.txt
+    train_split: data/splits/train.txt
+    val_split: data/splits/val.txt
+  root_dir: /content/dataset
+evaluation:
+  compute_map_50_95: true
+  confidence_threshold: 0.5
+  iou_thresholds:
+  - 0.5
+  - 0.75
+experiment:
+  description: Standard Faster R-CNN with ResNet50-FPN backbone and COCO pre-trained
+    weights
+  name: exp_02_augmentation
+  seed: 42
+lr_scheduler:
+  gamma: 0.1
+  step_size: 6
+  type: StepLR
+model:
+  architecture: fasterrcnn_resnet50_fpn
+  backbone: resnet50
+  box_detections_per_img: 100
+  box_nms_thresh: 0.5
+  box_score_thresh: 0.05
+  num_classes: 2
+  pretrained: true
+  pretrained_weights: DEFAULT
+  trainable_backbone_layers: 3
+optimizer:
+  lr: 0.005
+  momentum: 0.9
+  type: SGD
+  weight_decay: 0.0005
+paths:
+  checkpoints_dir: experiments\exp_02_augmentation\checkpoints
+  logs_dir: experiments\exp_02_augmentation\logs
+  metrics_dir: outputs/metrics
+  output_dir: experiments\exp_02_augmentation\outputs
+  predictions_dir: outputs/predictions
+training:
+  clip_grad_norm: 10.0
+  early_stopping:
+    enabled: true
+    mode: max
+    monitor: val_map_50
+    patience: 5
+  epochs: 20
+  log_interval: 50
+  mixed_precision: true
+  save_interval: 5
+  val_interval: 1
+transforms:
+  augmentation:
+    horizontal_flip_prob: 0.5
+    vertical_flip_prob: 0.0
+  augmentation_strategy: medical_conservative
+  clahe:
+    clip_limit: 2.0
+    enabled: true
+  horizontal_flip: 0.5
+  image_size:
+    max_size: 1333
+    min_size: 800
+  normalization:
+    mean:
+    - 0.485
+    - 0.456
+    - 0.406
+    std:
+    - 0.229
+    - 0.224
+    - 0.225
+  random_brightness_contrast:
+    brightness_limit: 0.1
+    contrast_limit: 0.1
+  random_rotate_degrees: 10

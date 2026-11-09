@@ -1,0 +1,101 @@
+# ==============================================================================
+# GRAZPEDWRI_Faster_RCNN - Baseline Configuration
+# Model: Faster R-CNN with ResNet-50-FPN Backbone
+# Task: Pediatric Wrist Fracture Detection (GRAZPEDWRI-DX)
+# ==============================================================================
+
+experiment:
+  name: "exp_01_baseline"
+  description: "Standard Faster R-CNN with ResNet50-FPN backbone and COCO pre-trained weights"
+  seed: 42
+
+data:
+  # Base dataset root can be overridden by environment variable GRAZPEDWRI_DATA_ROOT
+  root_dir: "/content/dataset"
+  images_dir: "images"
+  labels_dir: "labels"
+  
+  # Metadata & split file paths (relative to workspace or absolute)
+  metadata:
+    dataset_csv: "data/metadata/dataset.csv"
+    dataset_yaml: "data/metadata/dataset.yaml"
+    split_by_patient_csv: "data/metadata/split_by_patient.csv"
+    train_split: "data/splits/train.txt"
+    val_split: "data/splits/val.txt"
+    test_split: "data/splits/test.txt"
+
+  # Target classes: Faster R-CNN index 0 is reserved for Background
+  classes:
+    num_classes: 2
+    names:
+      0: "background"
+      1: "fracture"
+    yolo_mapping:
+      0: 1  # Map YOLO class 0 (Fracture) -> Faster R-CNN class 1
+
+  # Loader parameters
+  loader:
+    batch_size: 2
+    num_workers: 2
+    pin_memory: true
+    drop_last: false
+
+transforms:
+  # Image preprocessing & normalization
+  image_size:
+    min_size: 800
+    max_size: 1333
+  normalization:
+    # ImageNet standard normalization (compatible with torchvision ResNet50-FPN weights)
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+  augmentation:
+    horizontal_flip_prob: 0.5
+    vertical_flip_prob: 0.0
+
+model:
+  architecture: "fasterrcnn_resnet50_fpn"
+  backbone: "resnet50"
+  pretrained: true
+  pretrained_weights: "DEFAULT"
+  trainable_backbone_layers: 3
+  num_classes: 2  # Background + Fracture
+  box_score_thresh: 0.05       # Low threshold during eval to compute PR curve
+  box_nms_thresh: 0.5          # NMS IoU threshold
+  box_detections_per_img: 100
+
+training:
+  epochs: 20
+  mixed_precision: true  # Automatic Mixed Precision (torch.cuda.amp)
+  clip_grad_norm: 10.0
+  log_interval: 50
+  val_interval: 1
+  save_interval: 5
+  early_stopping:
+    enabled: true
+    patience: 5
+    monitor: "val_map_50"
+    mode: "max"
+
+optimizer:
+  type: "SGD"
+  lr: 0.005
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: "StepLR"
+  step_size: 6
+  gamma: 0.1
+
+evaluation:
+  confidence_threshold: 0.50   # Operating point for precision/recall/F1 calculation
+  iou_thresholds: [0.5, 0.75]
+  compute_map_50_95: true
+
+paths:
+  checkpoints_dir: "checkpoints"
+  output_dir: "outputs"
+  logs_dir: "outputs/logs"
+  metrics_dir: "outputs/metrics"
+  predictions_dir: "outputs/predictions"

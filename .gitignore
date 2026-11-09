@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# PyTorch Checkpoints & Large Model Weights
+checkpoints/*.pth
+checkpoints/*.pt
+experiments/**/*.pth
+experiments/**/*.pt
+*.onnx
+
+# Datasets, Raw Images, Labels & Large ZIPs
+data/images/
+data/labels/
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Execution Outputs, Logs & TensorBoard Event Files
+outputs/
+events.out.tfevents.*
+runs/
+wandb/
+
+# IDE & Editor Specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Temporary and Cache Files
+tmp/
+temp/
+scratch/
+.pytest_cache/
+.coverage
+htmlcov/

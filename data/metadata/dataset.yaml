@@ -1,0 +1,21 @@
+# GRAZPEDWRI-DX Dataset Configuration
+path: /content/dataset
+train: data/splits/train.txt
+val: data/splits/val.txt
+test: data/splits/test.txt
+
+# Class mapping (YOLO class 0 is Fracture)
+names:
+  0: fracture
+
+# Target metadata reference
+nc: 1
+target_class: fracture
+total_images: 20327
+positive_images: 13550
+negative_images: 6777
+total_boxes: 18090
+splits:
+  train: 14210
+  val: 3032
+  test: 3085
